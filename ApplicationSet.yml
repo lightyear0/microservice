@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: microservice-set
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: microservice
+  targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+  applications:
+  - name: microservice
+    source:
+      repoURL: https://github.com/lightyear0/microservice.git
+      path: microservice
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: default

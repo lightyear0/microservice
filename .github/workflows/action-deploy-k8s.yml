@@ -1,0 +1,43 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOCKER_REGISTRY: docker.io
+  DOCKER_IMAGE: microservice
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${{ env.GITHUB_SHA }}
+
+    - name: Install Helm
+      run: |
+        curl https://get.helm.sh/helm-v3.5.0-linux-amd64.tar.gz -o helm.tar.gz
+        tar xzvf helm.tar.gz
+        sudo mv linux-amd64/helm /usr/local/bin/
+
+    - name: Install chart
+      run: |
+        helm upgrade --install microservice ./microservice -f values.yaml
